@@ -6,7 +6,7 @@ import numpy as np
 
 class Command(BaseCommand):
     def handle(self, **options):
-        today = datetime.now() - timedelta(days=2)
+        today = datetime.now() - timedelta(days=1)
         #day_of_year = today.timetuple().tm_yday
         r1=random.random()
         ik = InstallationKey.objects.all()
