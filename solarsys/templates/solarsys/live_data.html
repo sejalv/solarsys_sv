@@ -1,0 +1,26 @@
+
+{% block title %}
+<h2><i>Live Data</i></h2>
+<h3>Date: {{ today }} </h3>
+<h4>Installation Key: {{ ik }} </h4>
+<br>
+{% endblock %}
+
+{% block content %}
+{% if ldc_today %}
+<div class="row">
+    {% for key,value in ldc_today.items %}
+    <div class="col-xs-6 col-lg-4">
+        <div class="panel panel-default">
+    <div class="panel-body">
+        <h5> DC Power: {{ value }} </h5>
+        <h5> Hour: {{ key }} </h5>
+        <br>
+    </div></div></div>
+    {% endfor %}
+</div>
+
+{% else %}
+    <p>No live data available.</p>
+{% endif %}
+{% endblock %}

@@ -1,0 +1,26 @@
+
+{% block title %}
+<h2><i>Reference Data</i></h2>
+<h3>Date: {{ today }} </h3>
+<h4>Installation Key: {{ ik }} </h4>
+<br>
+{% endblock %}
+
+{% block content %}
+{% if rdc_hr_today %}
+<div class="row">
+    {% for key,value in rdc_hr_today.items %}
+    <div class="col-xs-6 col-lg-4">
+        <div class="panel panel-default">
+    <div class="panel-body">
+        <h5> DC Power: {{ value }} </h5>
+        <h5> Hour: {{ key }} </h5>
+        <br>
+    </div></div></div>
+    {% endfor %}
+</div>
+
+{% else %}
+    <p>No reference data available.</p>
+{% endif %}
+{% endblock %}
