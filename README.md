@@ -5,8 +5,8 @@ Created a service that measures performance of solar systems against reference/e
 Technologies: Python 2.7 with Django Framework, PostgreSQL (Database), HTML (Web), Heroku (Deployment)
 
 Sample reference data: Hourly DC solar power (in watts), key “dc”, which includes 365*24=8760 data points is the reference/estimated data.
-URL: https://developer.nrel.gov/api/pvwatts/v5.json?api_key=DEMO_KEY&lat=19&lon=73&system_capacity=4&azimuth=180&tilt=19&array_type=1&module_type=1&losses=10&dataset=IN&timeframe=hourly 
-Path: /Data/oorjan_ref.json
+* URL: https://developer.nrel.gov/api/pvwatts/v5.json?api_key=DEMO_KEY&lat=19&lon=73&system_capacity=4&azimuth=180&tilt=19&array_type=1&module_type=1&losses=10&dataset=IN&timeframe=hourly 
+* Path: /Data/oorjan_ref.json
 
 DB Tables: 
 * solarsys_solarreference (Model- SolarReference): Entire reference data, using jsonfield
