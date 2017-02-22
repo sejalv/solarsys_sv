@@ -6,13 +6,15 @@ import numpy as np
 
 class Command(BaseCommand):
     def handle(self, **options):
-        today = datetime.now() - timedelta(days=1)
+        today = datetime.now() - timedelta(days=2)
+        #print today
         #day_of_year = today.timetuple().tm_yday
         r1=random.random()
         ik = InstallationKey.objects.all()
         sc_max=max(ik.values('system_capacity'))
         for n in range(24): #range(24) today.hour+1
             today=today.replace(hour=n,minute=00,second=00,microsecond=00) #hour=n or today.hour
+            #print today
             for item in ik:
                 rdc_hr = ReferenceDC.objects.get(hour=n)   #hour=n or today.hour
                 live_dc_now = np.mean(rdc_hr.daily_dc) * r1 * (float(item.system_capacity)/float(sc_max['system_capacity']))
