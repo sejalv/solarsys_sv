@@ -54,11 +54,13 @@ def performance_report(request, today=None):
                     continue
                 ldc_hr_today = LiveDCDump.objects.filter(lat=i.lat, long=i.long, system_capacity=i.system_capacity,
                                                          timestamp=today).values('dc_power').first()
-
-                if ldc_hr_today['dc_power'] < (rdc_hr_today * 80 / 100):
-                    all_dc[n] = [ldc_hr_today['dc_power'],rdc_hr_today,rdc_hr_today * 80 / 100]
+                try:
+                    if ldc_hr_today['dc_power'] < (rdc_hr_today * 80 / 100):
+                        all_dc[n] = [ldc_hr_today['dc_power'],rdc_hr_today,rdc_hr_today * 80 / 100,i.id]
+                except:
+                    continue
 
         context={'all_dc': all_dc, 'today':today.date()}
-        #sendemail(today)
+
         return render(request, 'solarsys/performance_report.html', context)
 

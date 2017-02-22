@@ -4,7 +4,7 @@ from . import views
 
 urlpatterns = [
     # ex: /
-    #url(r'^$', views.home, name='home'),
+    url(r'^$', views.performance_report, name='home'),
     # ex: /live - live data for the day
     url(r'^live$', views.live_data, name='live_data'),
     # ex: /reference - reference data for the day
