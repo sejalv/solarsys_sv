@@ -1,0 +1,23 @@
+
+{% block title %}
+<h2><i> Installation Key </i></h2>
+<h4>IK: {{ ik }} </h4>
+<br>
+{% endblock %}
+
+{% block content %}
+{% if ik %}
+<div class="row">
+    <div class="panel-body">
+        <h5> ID: {{ ik.id }} </h5>
+        <h5> Lat: {{ ik.lat }} </h5>
+        <h5> Lon: {{ ik.long }} </h5>
+        <h5> SC: {{ ik.system_capacity }} </h5>
+        <br>
+    </div>
+</div>
+
+{% else %}
+    <p>No such installation key available.</p>
+{% endif %}
+{% endblock %}

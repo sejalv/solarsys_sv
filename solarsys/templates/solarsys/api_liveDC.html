@@ -1,0 +1,21 @@
+
+{% block title %}
+<h2><i>Live Data</i></h2>
+<h3>Date: {{ today }} </h3>
+<h4>Installation Key: {{ ik.installation_key }} </h4>
+<br>
+{% endblock %}
+
+{% block content %}
+{% if errm %}
+<div class="row">
+    <div class="panel-body">
+        <h5> {{ errm }} </h5>
+        <br>
+    </div>
+</div>
+
+{% else %}
+    <p>No live data available.</p>
+{% endif %}
+{% endblock %}
