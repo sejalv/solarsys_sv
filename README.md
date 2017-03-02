@@ -13,7 +13,7 @@ DB Tables:
 * solarsys_installationkey (Model- InstallationKey): Auto-generated Installation Key (UUID) with correspoonding 'lat','long','system_capacity' values
 * solarsys_livedc (Model- LiveDC): DC Power records simulated per hour for each installation key, inserted here
 
-Scripts :
+Scripts:
 * simDCLive.py (/solarsys/management/commands): Hourly script that simulates DC Power for each installation key (scheduled using Heroku Scheduler)
 * dailyReport.py (/solarsys/management/commands): Daily script that compares Live DC Power values of the day with Reference DC Power values, based on nearest lat/long, and same SC/timestamp (Date+Hour), and sends an email alert at 8PM, consisting of those Live DC values which are less than 80% of Ref Dc values
 
@@ -21,9 +21,14 @@ Web Pages (/solarsys/templates/solarsys):
 * reference_data.html (View- reference_data): lists all the Reference DC values for the day
 * live_data.html (View- live_data): lists all the Live DC values for the day
 * performance_report.html (View- performance_report): list of flagged Live DC values (<80% of DC) for the day along with its corresponding DC values and installation key
-* pending : 2 API links
+* 2 API links (pending)
+
+Other:
+* Logic and functions (/solarsys/utilities.py)
+* Basic tests (/solarsys/views.py)
+* App URLs (/solarsys/urls.py)
 
 Ongoing/Pending Tasks:
 * API link provision
 * Additional test cases for data validation, email and error logs
-* Improvement in views, web app
+* Improvement in front end
