@@ -1,11 +1,10 @@
 from django.conf import settings
-import requests, json
+import requests, json, random
 from math import radians, cos, sin, asin, sqrt
 import secret
-from models import Reference
+from .models import LiveDC, Reference, InstallationKey
 
-def create_referenceDC(lat,lon,sc):
-    #create new reference objects (installation + dc), called if obj not found
+def create_referenceDC(lat,lon,sc): #create new reference objects (installation + dc), called if obj not found
     api_key = secret.API_NREL_SECRET_KEY
     api = "https://developer.nrel.gov/api/pvwatts/v5.json?api_key=%s&lat=%f&lon=%f&system_capacity=%f&azimuth=180&tilt=%f" \
           "&array_type=1&module_type=1&losses=10&dataset=IN&timeframe=hourly" % (api_key, lat, lon, sc, lat)
@@ -27,13 +26,13 @@ def create_referenceDC(lat,lon,sc):
         dc[i] = f
     return dc
 
-def genLiveDC_Hourly(refid, hr):
+def genLiveDC_hourly(refid, hr):
     ref = Reference.objects.get(id=refid)
     rdc_hr = []
     for j in range(365):
         rdc_hr.append(ref.dc[str(j)][hr])
     live_dc_now = round(random.uniform(0.1, max(rdc_hr)), 3) if max(rdc_hr) != 0 else 0
-    # print str(live_dc_now) + ' / ' + str(max(rdc_hr))
+    print str(hr) +': '+ str(live_dc_now) + ' / ' + str(max(rdc_hr))
     return live_dc_now
 
 
@@ -59,6 +58,26 @@ def nearest_reference(ik_long,ik_lat,ik_sc):
             id = ref.values_list('id')[i][0]
     return id
 
+def createPerformance_daily(installation_key,date):
+    try:
+        ik = InstallationKey.objects.get(installation_key=installation_key)
+        refid = nearest_reference(ik.long, ik.lat, ik.system_capacity)
+        day_of_year = date.timetuple().tm_yday
+        finStr=""
+        for i in range(24):
+            try:
+                rdc = Reference.objects.get(id=refid)
+                rdc_hr = rdc.dc[str(day_of_year-1)][i]
+                date = date.replace(hour=i, minute=00, second=00, microsecond=00)
+                ldc = LiveDC.objects.get(installation_key=installation_key, timestamp=date)
+                if ldc.dc_power < rdc_hr * 80/100:
+                    str1 = "Hour: %d:00:00 <br> Live Data: %f < 80%% of Ref Data: %f <br><br>" %(i, ldc.dc_power, rdc_hr)
+                    finStr = finStr + str1
+            except:
+                break
+        return finStr
+    except:
+        return None
 
 def sendemail(message):
     heading = "<H4>Daily Report (" + str(today.date()) + ") for low DC outputs:</H4><br><br>"

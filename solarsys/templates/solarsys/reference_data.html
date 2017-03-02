@@ -1,7 +1,7 @@
 
 {% block title %}
 <h2><i>Reference Data</i></h2>
-<h3>Date: {{ today }} </h3>
+<h3>Date: {{ date }} </h3>
 <h4>Lat: {{ lat }} </h4>
 <h4>Lon: {{ lon }} </h4>
 <h4>SC: {{ sc }} </h4>
@@ -9,6 +9,8 @@
 {% endblock %}
 
 {% block content %}
+{% if error_message %} {{ error_message }} {% endif %}
+
 {% if rdc_hr_today %}
 <div class="row">
     {% for value in rdc_hr_today %}

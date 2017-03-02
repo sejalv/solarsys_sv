@@ -1,23 +1,18 @@
 
 {% block title %}
 <h2><i> Performance Measurement </i></h2>
-<h3>Date: {{ today }} </h3>
+<h3>Date: {{ date }} </h3>
+<h3>Installation_key: {{ installation_key.installation_key }} </h3>
 <br>
 {% endblock %}
 
 {% block content %}
 {% if all_dc %}
 <div class="row">
-    {% for key,value in all_dc.items %}
-    <div class="col-xs-6 col-lg-4">
-        <div class="panel panel-default">
     <div class="panel-body">
-        <h5> Hour: {{ key }}:00 </h5>
-        <h5> Installation Key: {{ value.3 }} </h5>
-        <h5> Live DC : {{ value.0 }} < {{ value.2 }}  (80 pct of Reference DC: {{ value.1 }})  </h5>
+        <h5> {{ all_dc | linebreaks }} </h5>
         <br>
-    </div></div></div>
-    {% endfor %}
+    </div>
 </div>
 
 {% else %}

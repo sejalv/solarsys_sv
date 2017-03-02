@@ -4,91 +4,85 @@ from django.core.urlresolvers import reverse
 from django.views.decorators.csrf import csrf_protect, csrf_exempt
 from .models import Reference, LiveDC, InstallationKey
 from datetime import datetime, timedelta
-import requests
 import utilities
+import math
 # Create your views here.
 
 @csrf_exempt
-def livedc_post(request, ik=None, today=None, errm=None):
-    ik = get_object_or_404(InstallationKey, pk=ik)
-    today = datetime.strptime(today, "%d-%m-%Y") if today else datetime.now()  #- timedelta(days=1)
+def livedc_post(request, installation_key=None, date=None, errm=None):
+    installation_key = get_object_or_404(InstallationKey, pk=installation_key)
+    date = datetime.strptime(date, "%d-%m-%Y") if date else datetime.now()  #- timedelta(days=1)
     #form = IKForm(request.POST)
     live_dc = LiveDC()
     if request.POST:    # and form.is_valid()
         try:
             for i in range(24):
-                today = today.replace(hour=i, minute=00, second=00, microsecond=00)  # today.hour
-                live_dc.installation_key = ik
-                live_dc.timestamp = today
+                date = date.replace(hour=i, minute=00, second=00, microsecond=00)  # date.hour
+                live_dc.installation_key = installation_key
+                live_dc.timestamp = date
                 live_dc.dc_power = utilities.genLiveDC_Hourly(refid, i)
-                #LiveDC.objects.create(installation_key=ik, timestamp=today, dc_power=live_dc_now)
+                #LiveDC.objects.create(installation_key=installation_key, timestamp=date, dc_power=live_dc_now)
                 live_dc.save()
             # Always return an HttpResponseRedirect after successfully dealing with POST data.
             # This prevents data from being posted twice if a user hits the Back button.
             errm = "Successfully Posted"
-            return HttpResponseRedirect(reverse('solarsys:api_liveDC', args=(ik.id,today,errm,)))
+            return HttpResponseRedirect(reverse('solarsys:api_liveDC', args=(installation_key.id,date,errm,)))
         except:
             errm = "Post failed"
-            return HttpResponseRedirect(reverse('solarsys:api_liveDC', args=(ik.id,today,errm,)))
+            return HttpResponseRedirect(reverse('solarsys:api_liveDC', args=(installation_key.id,date,errm,)))
     errm = "From outside of request.post clause"
-    return render(request, 'solarsys/api_liveDC.html', {'ik': ik, 'today': today, 'live_dc':live_dc, 'errm':errm})
+    context =  {'installation_key': installation_key, 'date': date, 'live_dc':live_dc, 'errm':errm}
+    return render(request, 'solarsys/api_liveDC.html', context)
 
 
-def performance_report(request, today=None):
-    if not today:
-        today = datetime.today() - timedelta(days=1)
-    day_of_year = today.timetuple().tm_yday
-    it = InstallationKey.objects.all()
-    all_dc = {}
-    for n in range(today.hour + 1):  # For each hour of the day
-        today = today.replace(hour=n, minute=00, second=00, microsecond=00)
-        for i in it:  # For each Installation
-            try:
-                rdc_hr = Reference.objects.get(hour=n, installation_id=i.id)
-                rdc_hr_today = rdc_hr.daily_dc[day_of_year - 1]
-            except:
-                continue
-            ldc_hr_today = LiveDC.objects.filter(lat=i.lat, long=i.long, system_capacity=i.system_capacity,
-                                                 timestamp=today).values('dc_power').first()
-            try:
-                if ldc_hr_today['dc_power'] < (rdc_hr_today * 80 / 100):
-                    all_dc[n] = [ldc_hr_today['dc_power'], rdc_hr_today, rdc_hr_today * 80 / 100, i.id]
-            except:
-                continue
+def performance_report(request, installation_key=None, date=None, errm=None):
+    #installation_key = get_object_or_404(InstallationKey, pk=installation_key)
+    date = datetime.strptime(date, "%d-%m-%Y") if date else datetime.now()  #- timedelta(days=1)
 
-    context = {'all_dc': all_dc, 'today': today.date()}
-    return render(request, 'solarsys/performance_report.html', context)
+    finStr = utilities.createPerformance_daily(installation_key, date)
+    all_dc = str.replace(finStr,"<br>","\n")
+    #all_dc = "\n".join(finStr.split("<br>"))
+    return render(request, 'solarsys/performance_report.html', {'all_dc': all_dc, 'date': date.date()
+                                                                ,'installation_key':installation_key})
 
 
-def reference_data(request, lat=19.07, lon=72.87, sc=4, today=datetime.today()):
-    day_of_year = today.timetuple().tm_yday
-    rdc_hr_today = None
+def reference_data(request, lat=19.07, lon=72.87, sc=10, date=None):
+    date = datetime.strptime(date,"%d-%m-%Y") if date else datetime.now()
+    day_of_year = date.timetuple().tm_yday
+    rdc_hr_today = []
     error_message = None
     try:
-        rdc_hr_today = Reference.objects.get(lat=lat, long=lon, system_capacity=sc, dc__has_key=str(day_of_year-1))
+        rdc = Reference.objects.get(lat__range=(math.floor(float(lat)), math.ceil(float(lat))),
+                                             long__range=(math.floor(float(lon)), math.ceil(float(lon))),
+                                                system_capacity=sc, dc__has_key=str(day_of_year-1))
+        rdc_hr_today = rdc.dc[str(day_of_year - 1)]
     except:
         error_message = "Reference not found!"
-    return render(request, 'solarsys/reference_data.html', {'rdc_hr_today':rdc_hr_today.dc[str(day_of_year - 1)], 'today':today.date(),
+    return render(request, 'solarsys/reference_data.html', {'rdc_hr_today':rdc_hr_today, 'date':date.date(),
                                                         'lat':lat, 'lon':lon, 'sc':sc,'error_message':error_message})
 
 
-def live_data(request, ik=None, today=datetime.today()):
-    ik = InstallationKey.objects.get(installation_key=(ik if ik else "07be3461-5ffa-423c-a3c2-b02b31f1d661"))
+def live_data(request, installation_key=None, date=None):
+    date = datetime.strptime(date, "%d-%m-%Y") if date else datetime.now()
+    installation_key = InstallationKey.objects.get(installation_key=
+                                            (installation_key if installation_key else "07be3461-5ffa-423c-a3c2-b02b31f1d661"))
     ldc_today = {}
-    for n in range(today.hour+1):  # For each hour of the day
-        today = today.replace(hour=n, minute=00, second=00, microsecond=00)
-        ldc_hr_today = LiveDC.objects.filter(lat=ik.lat, long=ik.long, system_capacity=ik.system_capacity,
-                                             timestamp=today).values('dc_power').first()
-        ldc_today[n] = ldc_hr_today['dc_power']
+    for n in range(24):  # For each hour of the day
+        date = date.replace(hour=n, minute=00, second=00, microsecond=00)
+        try:
+            live_dc = LiveDC.objects.get(installation_key=installation_key, timestamp=date)
+            ldc_today[n] = live_dc.dc_power
+        except:
+            break
+    context = {'ldc_today':ldc_today, 'date':date.date(), 'installation_key':installation_key.installation_key}
+    return render(request, 'solarsys/live_data.html', context)
 
-    return render(request, 'solarsys/live_data.html', {'ldc_today':ldc_today, 'today':today.date(), 'ik':ik.id})
 
-
-def installation_key_data(request, ik=None):
+def installation_key_data(request, installation_key=None):
     error_message = None
     try:
-        ik = InstallationKey.objects.get(installation_key=(ik if ik else '86308d2b-7555-4c73-8e3f-1b963f61c1c3'))
+        installation_key = InstallationKey.objects.get(installation_key=(installation_key if installation_key else '86308d2b-7555-4c73-8e3f-1b963f61c1c3'))
     except:
         error_message = "InstallationKey not found!"
-    return render(request, 'solarsys/installation_key_data.html', {'ik':ik, 'error_message':error_message})
+    return render(request, 'solarsys/installation_key_data.html', {'installation_key':installation_key, 'error_message':error_message})
 

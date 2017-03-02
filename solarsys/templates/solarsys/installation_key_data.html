@@ -1,18 +1,17 @@
 
 {% block title %}
 <h2><i> Installation Key </i></h2>
-<h4>IK: {{ ik }} </h4>
 <br>
 {% endblock %}
 
 {% block content %}
-{% if ik %}
+{% if installation_key %}
 <div class="row">
     <div class="panel-body">
-        <h5> ID: {{ ik.id }} </h5>
-        <h5> Lat: {{ ik.lat }} </h5>
-        <h5> Lon: {{ ik.long }} </h5>
-        <h5> SC: {{ ik.system_capacity }} </h5>
+        <h5> ID: {{ installation_key.installation_key }} </h5>
+        <h5> Lat: {{ installation_key.lat }} </h5>
+        <h5> Lon: {{ installation_key.long }} </h5>
+        <h5> SC: {{ installation_key.system_capacity }} </h5>
         <br>
     </div>
 </div>
