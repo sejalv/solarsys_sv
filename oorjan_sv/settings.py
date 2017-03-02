@@ -21,10 +21,10 @@ BASE_DIR = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
 # See https://docs.djangoproject.com/en/1.10/howto/deployment/checklist/
 
 # SECURITY WARNING: keep the secret key used in production secret!
-SECRET_KEY = 'r09vq-n==*4=o&#4ehx)in(x!w!!z+571s7+j*#!ej@_8-&gb@'
+SECRET_KEY = ''
 
 # SECURITY WARNING: don't run with debug turned on in production!
-DEBUG = True #False #
+DEBUG = False #True
 
 ALLOWED_HOSTS = ['*']
 
@@ -82,8 +82,8 @@ DATABASES = {
         #'NAME': os.path.join(BASE_DIR, 'db.sqlite3'),
         'ENGINE': 'django.db.backends.postgresql',
         'NAME': 'solarsys',
-        'USER': 'postgres',
-        'PASSWORD': '4321',
+        'USER': '',
+        'PASSWORD': '',
         'HOST': '127.0.0.1',
         'PORT': '5432',
     }
@@ -94,8 +94,8 @@ DATABASES['default'].update(db_from_env)
 
 EMAIL_BACKEND = 'django.core.mail.backends.smtp.EmailBackend'
 EMAIL_HOST = 'smtp.gmail.com'
-EMAIL_HOST_PASSWORD = 'FcTtStW18'
-EMAIL_HOST_USER = 'sejvaidya@gmail.com'
+EMAIL_HOST_PASSWORD = ''
+EMAIL_HOST_USER = ''
 EMAIL_PORT = 587
 EMAIL_SUBJECT_PREFIX = '[%s] ' % 'oorjan_sv'
 EMAIL_USE_TLS = True
