@@ -19,6 +19,7 @@ class Reference(models.Model):
     class meta:
         unique_together = (('lat', 'long', 'system_capacity'))
 
+    """
     def clean(self, *args, **kwargs):
         errors = {}
         if not isinstance(self.dc, list) or len(self.dc) != 8760:
@@ -30,7 +31,7 @@ class Reference(models.Model):
     def save(self, *args, **kwargs):
         self.full_clean()
         super(Reference, self).save(*args, **kwargs)
-
+    """
 
 
 # added new model for InstallationKey
