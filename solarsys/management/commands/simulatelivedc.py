@@ -27,4 +27,3 @@ class Command(BaseCommand):
             print data
             response = requests.post(LIVEDC_URL, data=data)
             print response.text if response.status_code in [201, 400] else "Error: " + str(response.status_code) + "\n"
-        print LIVEDC_URL+
