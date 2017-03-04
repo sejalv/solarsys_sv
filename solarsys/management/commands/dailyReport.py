@@ -5,15 +5,18 @@ from solarsys.models import InstallationKey
 
 class Command(BaseCommand):
     def add_arguments(self, parser):
-        #parser.add_argument('installation_key', type=str)
         parser.add_argument('date', type=str, nargs='?', default=datetime.now().strftime("%d-%m-%Y"))
+        parser.add_argument('installation_key', type=str, nargs='?', default="")
 
     def handle(self, **options):
 
         date = datetime.strptime(options['date'], "%d-%m-%Y") #if options['date'] else datetime.now() #- timedelta(days=1)
         #installation_key = options['installation_key'] if options['installation_key'] else "07be3461-5ffa-423c-a3c2-b02b31f1d661"
-
-        for i in InstallationKey.objects.all():
+        if options['installation_key']:
+            ikset = InstallationKey.objects.filter(installation_key=options['installation_key'])
+        else:
+            ikset = InstallationKey.objects.all()
+        for i in ikset:
             msg = utilities.dailyPerformance(i.installation_key,date)
             message = msg if msg else "No data for this day or installation key: "+str(i.installation_key)+"!"
             heading = "<H4>Daily Report (" + str(date.date()) + ") with low DC Power values for " \
