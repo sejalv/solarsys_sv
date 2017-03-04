@@ -4,21 +4,34 @@ from django.contrib.postgres.fields import JSONField
 from django.db import models
 import uuid
 
-# altered columns - daily_dc to dc
+# combined Installation and ReferenceDC tables into 1
 class Reference(models.Model):
-    #installation_id = models.ForeignKey(Installation)
     lat = models.DecimalField(max_digits=9, decimal_places=6)
     long = models.DecimalField(max_digits=9, decimal_places=6)
     system_capacity = models.DecimalField(max_digits=9, decimal_places=3)
     dc = JSONField()     #key: DoY (Day of Year, starting from 0) -> values: 24 DC values (per hour) for DoY
+    #added_on = models.DateTimeField(auto_now_add=True)
 
-    """
     def __unicode__(self):
-        return self.id
+        return unicode(self.id)
+        #return str(self.lat) + ' - ' + str(self.long)
 
-    def getDCToday(self, doy):
-        return self.dc[doy]
-    """
+    class meta:
+        unique_together = (('lat', 'long', 'system_capacity'))
+
+    def clean(self, *args, **kwargs):
+        errors = {}
+        if not isinstance(self.dc, list) or len(self.dc) != 8760:
+            errors['dc'] = 'DC must be an array containing 8760 data points.'
+        if bool(errors):
+            raise ValidationError(errors)
+        super(Reference, self).clean(*args, **kwargs)
+
+    def save(self, *args, **kwargs):
+        self.full_clean()
+        super(Reference, self).save(*args, **kwargs)
+
+
 
 # added new model for InstallationKey
 class InstallationKey(models.Model):
@@ -26,20 +39,24 @@ class InstallationKey(models.Model):
     lat = models.DecimalField(max_digits=9, decimal_places=6)
     long = models.DecimalField(max_digits=9, decimal_places=6)
     system_capacity = models.DecimalField(max_digits=7, decimal_places=4)
+    #installation_id = models.ForeignKey(Reference)
+    #added_on = models.DateTimeField(auto_now_add=True)
 
-    """
     def __unicode__(self):
-        return self.installation_key
-    """
+        return unicode(self.installation_key)
+
 
 # initially called LiveDCDump
 class LiveDC(models.Model):
     installation_key = models.ForeignKey(InstallationKey)
     timestamp = models.DateTimeField()
     dc_power = models.DecimalField(max_digits=9, decimal_places=4)
+    #    added_on = models.DateTimeField(auto_now_add=True)
 
     def __unicode__(self):
-        return self.dc_power
+        return unicode(self.installation_key)
+
+
 
 
 """
@@ -60,14 +77,4 @@ class Installation(models.Model):
 
     def __unicode__(self):
         return self.id
-"""
-"""
-# For future: Live data dump may be moved here after daily report is created
-class LiveDC(models.Model):
-    installation_id = models.ForeignKey(Installation)
-    date = models.DateTimeField()
-    dc_hourly = JSONField()
-
-    def __unicode__(self):
-        return self.hour
 """

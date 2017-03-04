@@ -22,7 +22,7 @@ class ReferenceAdmin(admin.ModelAdmin):
             messages.error(request,"Object ID: %d, with given lat/lon/sc already exists!" %ref.id)
 
         except:
-            util_rt = utilities.create_reference(form.cleaned_data['lat'], form.cleaned_data['long'],
+            util_rt = utilities.getRefDC_API(form.cleaned_data['lat'], form.cleaned_data['long'],
                                   form.cleaned_data['system_capacity'])
             if isinstance(util_rt,str):
                 messages.set_level(request, messages.ERROR)

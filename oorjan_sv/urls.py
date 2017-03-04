@@ -19,6 +19,7 @@ from django.contrib import admin
 urlpatterns = [
     url(r'^admin/', include(admin.site.urls)),
     url(r'^', include('solarsys.urls', namespace="home")),
+
     #all requests starting with 'solarsys/' will be passed to our solarsys app url mapping under the namespace solarsys
-    url(r'^reviews/', include('solarsys.urls', namespace="solarsys")),
+    #url(r'^solarsys/', include('solarsys.urls', namespace="solarsys")),
 ]

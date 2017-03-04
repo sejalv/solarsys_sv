@@ -4,18 +4,18 @@ from . import views #, myhomeinstallation
 
 urlpatterns = [
     # ex: /
-    url(r'^$', views.performance_report, name='home'),
+    #url(r'^$', views.get_performance, name='home'),
 
-    url(r'^solarsys/(?P<installation_key>[A-Za-z0-9-]+)/(?P<date>\d{2}-\d{2}-\d{4})$', views.performance_report, name='performance_report'),
-    url(r'^solarsys/api/liveDC/(?P<ik>[A-Za-z0-9-]+)/(?P<date>\d{2}-\d{2}-\d{4})$', views.livedc_post, name='api_liveDC'),
+    # API URLs
+    url(r'^solarsys/api/performance/', views.get_performance, name='get_performance'),
+    url(r'^solarsys/api/livedc/', views.post_livedc, name='post_livedc'),
+    url(r'^solarsys/api/simlivedc/', views.sim_livedc, name='sim_livedc'),
+    url(r'^solarsys/api/getlivedc/', views.get_livedc, name='get_livedc'),
 
-    url(r'^installationkey/(?P<installation_key>[A-Za-z0-9-]+)$', views.installation_key_data, name='installation_key_data'),
-    # ex: /reference - reference data for the day
-    url(r'^reference/(?P<lat>\d+(?:\.\d+)?)/(?P<lon>\d+(?:\.\d+)?)/(?P<sc>\d+(?:\.\d+)?)/(?P<date>\d{2}-\d{2}-\d{4})/$',
-                                                 views.reference_data, name='reference_data'),
-    # ex: /live - live data for the day
-    url(r'^live/(?P<installation_key>[A-Za-z0-9-]+)/(?P<date>\d{2}-\d{2}-\d{4})$', views.live_data, name='live_data'),
+    url(r'^solarsys/api/getinstallationkey/', views.get_installationkey, name='get_installationkey'),
+    #url(r'^solarsys/api/postinstallationkey/', views.post_installationkey, name='post_installationkey'),
 
-    # ex: /performance - performance measurement so far
-    #url(r'^performance/$', views.performance_report, name='performance_report'),
+    url(r'^solarsys/api/getreference/', views.get_reference, name='get_reference'),
+    #url(r'^solarsys/api/postreference/', views.post_reference, name='post_reference'),
+
 ]

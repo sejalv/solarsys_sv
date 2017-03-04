@@ -70,3 +70,4 @@ wrapt==1.10.6
 XlsxWriter==0.9.3
 xlwt==1.1.2
 xmltodict==0.10.2
+haversine==0.4.5

@@ -1,88 +1,179 @@
+from django.core.exceptions import ObjectDoesNotExist
 from django.shortcuts import get_object_or_404, render, HttpResponse
-from django.http import HttpResponseRedirect, HttpResponseForbidden
+#from django.http import HttpResponseRedirect, HttpResponseForbidden
 from django.core.urlresolvers import reverse
-from django.views.decorators.csrf import csrf_protect, csrf_exempt
+from django.views.decorators.csrf import csrf_exempt #, csrf_protect
 from .models import Reference, LiveDC, InstallationKey
-from datetime import datetime, timedelta
+from datetime import datetime #, timedelta
+import math, requests
 import utilities
-import math
+from django.utils import timezone
 # Create your views here.
 
 @csrf_exempt
-def livedc_post(request, installation_key=None, date=None, errm=None):
-    installation_key = get_object_or_404(InstallationKey, pk=installation_key)
-    date = datetime.strptime(date, "%d-%m-%Y") if date else datetime.now()  #- timedelta(days=1)
-    #form = IKForm(request.POST)
-    live_dc = LiveDC()
-    if request.POST:    # and form.is_valid()
-        try:
-            for i in range(24):
-                date = date.replace(hour=i, minute=00, second=00, microsecond=00)  # date.hour
-                live_dc.installation_key = installation_key
-                live_dc.timestamp = date
-                live_dc.dc_power = utilities.genLiveDC_Hourly(refid, i)
-                #LiveDC.objects.create(installation_key=installation_key, timestamp=date, dc_power=live_dc_now)
-                live_dc.save()
-            # Always return an HttpResponseRedirect after successfully dealing with POST data.
-            # This prevents data from being posted twice if a user hits the Back button.
-            errm = "Successfully Posted"
-            return HttpResponseRedirect(reverse('solarsys:api_liveDC', args=(installation_key.id,date,errm,)))
-        except:
-            errm = "Post failed"
-            return HttpResponseRedirect(reverse('solarsys:api_liveDC', args=(installation_key.id,date,errm,)))
-    errm = "From outside of request.post clause"
-    context =  {'installation_key': installation_key, 'date': date, 'live_dc':live_dc, 'errm':errm}
-    return render(request, 'solarsys/api_liveDC.html', context)
+def post_livedc(request):
+    try:
+        installationkey = request.POST['installationkey']
+        timestamp = datetime.strptime(request.POST['timestamp'], "%Y-%m-%d %H")
+        dcpower = request.POST['dcpower']
+    except KeyError:
+        return HttpResponse(status=400,
+                            content="Invalid request param. Input Must be a valid 'installationkey', 'timestamp' and 'dcpower'.")
+    except ValueError:
+        return HttpResponse(status=400, content="timestamp must be of format %Y-%m-%d %H")
+
+    try:
+        installation = InstallationKey.objects.get(installation_key=installationkey)
+    except ObjectDoesNotExist:
+        return HttpResponse(status=400, content="Invalid installation key")
+
+    livedc, created = LiveDC.objects.update_or_create(installation_key=installation, timestamp=timestamp, #,dc_power=dcpower)
+                                                      defaults={'dc_power': dcpower})
+    return HttpResponse(status=201, content="Okay")
+
+@csrf_exempt
+def sim_livedc(request):
+    try:
+        installationkey = request.POST['installationkey']
+        date = datetime.strptime(request.POST['date'], "%Y-%m-%d")
+    except KeyError:
+        return HttpResponse(status=400,
+                            content="Invalid request param. Input Must be a valid 'installationkey', 'date'.")
+    except ValueError:
+        return HttpResponse(status=400, content="date must be of format %Y-%m-%d")
+
+    try:
+        installation_key = InstallationKey.objects.get(installation_key=installationkey)
+    except ObjectDoesNotExist:
+        return HttpResponse(status=400, content="Invalid installation key")
+
+    for hour in range(0, 24):
+        timestamp = date.replace(hour=hour, minute=00, second=00, microsecond=00)  # today.hour
+        dcpower= utilities.genLiveDC_hourly(installationkey, hour)
+        livedc, created = LiveDC.objects.update_or_create(installation_key=installation_key, timestamp=timestamp, #,dc_power=dcpower)
+                                                      defaults={'dc_power': dcpower})
+
+    return HttpResponse(status=201, content="Okay")
+
+@csrf_exempt
+def get_livedc(request):
+    try:
+        installationkey = request.GET['installationkey']
+        date = datetime.strptime(request.GET['date'], "%d-%m-%Y")
+    except KeyError:
+        return HttpResponse(status=400,
+                            content="Invalid request param. Input Must be a valid 'installationkey', 'date'.")
+    except ValueError:
+        return HttpResponse(status=400, content="date must be of format %Y-%m-%d")
+
+    try:
+        installation_key = InstallationKey.objects.get(installation_key=installationkey)
+    except ObjectDoesNotExist:
+        return HttpResponse(status=400, content="Invalid installation key")
+
+    ldc = LiveDC.objects.filter(installation_key=installation_key, timestamp__date=date.date()).order_by('timestamp')
+    content=""
+    for ld in ldc:
+        content += str(ld.timestamp.hour)+": "+str(ld.dc_power)+"<br>"
+    return HttpResponse(status=200, content=content)
 
 
-def performance_report(request, installation_key=None, date=None, errm=None):
-    #installation_key = get_object_or_404(InstallationKey, pk=installation_key)
-    date = datetime.strptime(date, "%d-%m-%Y") if date else datetime.now()  #- timedelta(days=1)
+@csrf_exempt
+def get_performance(request):
+    try:
+        installationkey = request.GET['installationkey']
+        date = datetime.strptime(request.GET['date'], "%d-%m-%Y")
+    except KeyError:
+        return HttpResponse(status=400,
+                            content="Invalid request param. Input must be a valid 'installationkey', 'date'.")
+    except ValueError:
+        return HttpResponse(status=400, content="date must be of format %d-%m-%Y")
 
-    finStr = utilities.createPerformance_daily(installation_key, date)
-    all_dc = str.replace(finStr,"<br>","\n")
-    #all_dc = "\n".join(finStr.split("<br>"))
-    return render(request, 'solarsys/performance_report.html', {'all_dc': all_dc, 'date': date.date()
-                                                                ,'installation_key':installation_key})
+    try:
+        installation_key = InstallationKey.objects.get(installation_key=installationkey)
+    except ObjectDoesNotExist:
+        return HttpResponse(status=400, content="Invalid installation key")
+
+    msg = utilities.dailyPerformance(installationkey, date)
+    content = msg if msg else "Nearest Reference not found"     #str.replace(msg, "<br>", "\n")
+    return HttpResponse(status=200, content=content)
 
 
-def reference_data(request, lat=19.07, lon=72.87, sc=10, date=None):
-    date = datetime.strptime(date,"%d-%m-%Y") if date else datetime.now()
+@csrf_exempt
+def get_installationkey(request):
+    try:
+        lat = float(request.GET['lat'])
+        lon = float(request.GET['long'])
+        sc = float(request.GET['sc'])
+
+    except (KeyError, TypeError):
+        return HttpResponse(status=400, content="Invalid request param, input must be valid float lat-long-sc")
+
+    #refid = utilities.nearest_reference(lat, long, sc)
+    ik = InstallationKey.objects.get(lat__range=(math.floor(lat)-0.5, math.ceil(lat)+0.5),
+                                             long__range=(math.floor(lon)-0.5, math.ceil(lon)+0.5),
+                                                system_capacity=sc)
+    content = "ID: "+str(ik.installation_key)+"<br>Lat: "+str(ik.lat) +"<br>Lon: "+str(ik.long)+"<br>SC: "+str(ik.system_capacity)
+    return HttpResponse(status=200, content=content)
+
+@csrf_exempt
+def post_installationkey(request):
+    try:
+        lat = float(request.POST['lat'])
+        long = float(request.POST['long'])
+        sc = float(request.POST['sc'])
+    except (KeyError, TypeError):
+        return HttpResponse(status=400, content="Invalid request param, input must be valid float lat-long-sc")
+
+    #refid = utilities.nearest_reference(lat, long, sc)
+    installationkey = InstallationKey.objects.create(lat=lat,  long=long,  system_capacity=sc) # ,installation=refid
+    return HttpResponse(status=201, content=installationkey)
+
+
+@csrf_exempt
+def get_reference(request):
+    try:
+        lat = float(request.GET['lat'])
+        lon = float(request.GET['long'])
+        sc = float(request.GET['sc'])
+        date = datetime.strptime(request.GET['date'], "%d-%m-%Y")
+
+    except (KeyError, TypeError):
+        return HttpResponse(status=400, content="Invalid request param, input must be valid float lat-long-sc")
+
     day_of_year = date.timetuple().tm_yday
-    rdc_hr_today = []
-    error_message = None
+    #refid = utilities.nearest_reference(lat, long, sc)
+    ref = Reference.objects.get(lat__range=(math.floor(lat)-0.5, math.ceil(lat)+0.5),
+                                             long__range=(math.floor(lon)-0.5, math.ceil(lon)+0.5),
+                                                system_capacity=sc)
+    content_head = "ID: "+str(ref.id)+"<br>Lat: "+str(ref.lat) +"<br>Lon: "+str(ref.long)+"<br>SC: "+str(ref.system_capacity)+"<br>"
+    content_body = ""
+    for hr in range(24):
+        content_body += str(hr) + ": " + str(ref.dc[str(day_of_year-1)][hr]) + "<br>"
+
+    return HttpResponse(status=200, content=content_head+content_body)
+
+@csrf_exempt
+def post_reference(request):
     try:
-        rdc = Reference.objects.get(lat__range=(math.floor(float(lat)), math.ceil(float(lat))),
-                                             long__range=(math.floor(float(lon)), math.ceil(float(lon))),
-                                                system_capacity=sc, dc__has_key=str(day_of_year-1))
-        rdc_hr_today = rdc.dc[str(day_of_year - 1)]
-    except:
-        error_message = "Reference not found!"
-    return render(request, 'solarsys/reference_data.html', {'rdc_hr_today':rdc_hr_today, 'date':date.date(),
-                                                        'lat':lat, 'lon':lon, 'sc':sc,'error_message':error_message})
+        lat = float(request.POST['lat'])
+        long = float(request.POST['long'])
+        system_capacity = request.POST['system_capacity']
+    except (KeyError, ValueError, TypeError):
+        return HttpResponse(status=400, content="Invalid request param. Input must be valid lat, long, system_capacity")
 
-
-def live_data(request, installation_key=None, date=None):
-    date = datetime.strptime(date, "%d-%m-%Y") if date else datetime.now()
-    installation_key = InstallationKey.objects.get(installation_key=
-                                            (installation_key if installation_key else "07be3461-5ffa-423c-a3c2-b02b31f1d661"))
-    ldc_today = {}
-    for n in range(24):  # For each hour of the day
-        date = date.replace(hour=n, minute=00, second=00, microsecond=00)
-        try:
-            live_dc = LiveDC.objects.get(installation_key=installation_key, timestamp=date)
-            ldc_today[n] = live_dc.dc_power
-        except:
-            break
-    context = {'ldc_today':ldc_today, 'date':date.date(), 'installation_key':installation_key.installation_key}
-    return render(request, 'solarsys/live_data.html', context)
-
-
-def installation_key_data(request, installation_key=None):
-    error_message = None
+    response = requests.get('https://developer.nrel.gov/api/pvwatts/v5.json?api_key=DEMO_KEY&lat={lat}&lon={long}&system_capacity={system_capacity}&azimuth=180&tilt={lat}&array_type=1&module_type=1&losses=10&dataset=IN&timeframe=hourly'.format(lat=lat, long=long, system_capacity=system_capacity))
     try:
-        installation_key = InstallationKey.objects.get(installation_key=(installation_key if installation_key else '86308d2b-7555-4c73-8e3f-1b963f61c1c3'))
-    except:
-        error_message = "InstallationKey not found!"
-    return render(request, 'solarsys/installation_key_data.html', {'installation_key':installation_key, 'error_message':error_message})
+        reference = response.json()
+        dc = reference['outputs']['dc']
+        #metadata = {'inputs': reference['inputs'], 'station_info': reference['station_info']}
+    except KeyError:
+        return HttpResponse(status=400, content="No reference DC data found for given lat-long-sc")
+    except Exception as e:
+        return HttpResponse(status=400, content="Some error occured. " + str(e))
 
+    ref, created = Reference.objects.update_or_create(lat=lat, long=long, system_capacity=system_capacity, defaults={'dc':dc})
+                                                      #defaults={'metadata': metadata, 'dc':dc})
+    #station, created = Station.objects.update_or_create(lat=lat, long=long, defaults={'reference': ref, 'system_capacity':system_capacity})
+
+    return HttpResponse(status=201, content=ref.id)
