@@ -64,7 +64,7 @@ def get_livedc(request):
         return HttpResponse(status=400,
                             content="Invalid request param. Input Must be a valid 'installationkey', 'date'.")
     except ValueError:
-        return HttpResponse(status=400, content="date must be of format %Y-%m-%d")
+        return HttpResponse(status=400, content="date must be of format %d-%m-%Y")
 
     try:
         installation_key = InstallationKey.objects.get(installation_key=installationkey)
