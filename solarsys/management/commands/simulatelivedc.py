@@ -15,9 +15,9 @@ class Command(BaseCommand):
         parser.add_argument('DATE', type=str, nargs='?', default=datetime.now().strftime("%Y-%m-%d"))
 
     def handle(self, **options):
-        #LIVEDC_URL = "https://oorjan-sv.herokuapp.com/api/liveDC"
-        LIVEDC_URL = "http://localhost:8000/solarsys/api/livedc/"
-        MY_INSTALLATION_KEY = options['MY_INSTALLATION_KEY'] if options['MY_INSTALLATION_KEY'] else "07be3461-5ffa-423c-a3c2-b02b31f1d661"
+        LIVEDC_URL = "https://oorjan-sv.herokuapp.com/api/liveDC"
+        #LIVEDC_URL = "http://localhost:8000/solarsys/api/livedc/"
+        MY_INSTALLATION_KEY = options['MY_INSTALLATION_KEY'] #if options['MY_INSTALLATION_KEY'] else "07be3461-5ffa-423c-a3c2-b02b31f1d661"
         DATE = datetime.strptime(options['DATE'], "%Y-%m-%d") #if options['DATE'] else datetime.now() #- timedelta(days=1)
 
         # simulate hourly data
