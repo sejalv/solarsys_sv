@@ -127,7 +127,7 @@ def post_installationkey(request):
 
     #refid = utilities.nearest_reference(lat, long, sc)
     installationkey = InstallationKey.objects.create(lat=lat,  long=long,  system_capacity=sc) # ,installation=refid
-    return HttpResponse(status=201, content=installationkey)
+    return HttpResponse(status=201, content="Okay <br>"+str(installationkey.installation_key))
 
 
 @csrf_exempt

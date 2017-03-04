@@ -13,9 +13,9 @@ urlpatterns = [
     url(r'^solarsys/api/getlivedc/', views.get_livedc, name='get_livedc'),
 
     url(r'^solarsys/api/getinstallationkey/', views.get_installationkey, name='get_installationkey'),
-    #url(r'^solarsys/api/postinstallationkey/', views.post_installationkey, name='post_installationkey'),
+    url(r'^solarsys/api/postinstallationkey/', views.post_installationkey, name='post_installationkey'),
 
     url(r'^solarsys/api/getreference/', views.get_reference, name='get_reference'),
-    #url(r'^solarsys/api/postreference/', views.post_reference, name='post_reference'),
+    url(r'^solarsys/api/postreference/', views.post_reference, name='post_reference'),
 
 ]
