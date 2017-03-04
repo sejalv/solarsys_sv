@@ -82,7 +82,7 @@ def dailyPerformance(installation_key,date):    # measures performance of Live D
         return None
 
 def sendemail(message):     # function that creates and sends email for Daily Report
-    msg = EmailMessage("Daily Report - Lower LiveDC values", message, settings.EMAIL_FROM, [secret.EMAIL_TO])
+    msg = EmailMessage("Daily Report - Lower LiveDC values", message, settings.EMAIL_FROM, secret.EMAIL_TO)
     msg.content_subtype = "html"
     msg.send()
 
