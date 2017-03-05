@@ -24,7 +24,7 @@ API end points:
 
 OR
 
-> python simulatelivedc.py c97bc848-047a-4940-957d-b70cfd9be1ba 2017-03-03
+> python simulatelivedc c97bc848-047a-4940-957d-b70cfd9be1ba 2017-03-03
 
 
 *	Get Performance of Live DC (compared to nearest Ref DC) using Postman / cURL OR command (dailyReport.py):
