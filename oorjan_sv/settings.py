@@ -107,7 +107,7 @@ EMAIL_FAIL_SILENTLY = False
 EMAIL_FROM = EMAIL_HOST_USER
 
 ADMINS = [
-    ('Admin1','sejal.v18@gmail.com'),
+    ('Admin1',secret1.EMAIL_HOST_USER),
 ]
 MANAGERS = ADMINS
 

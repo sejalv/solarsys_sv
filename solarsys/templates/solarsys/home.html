@@ -1,0 +1,32 @@
+<h2>Web Service for oorjan-sv application</h2><br>
+<h3> API end points: </h3>
+
+<h4> Setup Reference Data either by admin interface OR using Postman / cURL: </h4>
+<em>curl -D - -X POST <a href="https://oorjan-sv.herokuapp.com/solarsys/api/postreference/">
+    https://oorjan-sv.herokuapp.com/solarsys/api/postreference/</a>
+    -d 'lat=19&long=73&system_capacity=4' </em><br>
+(DC Output - 8760 data points, will be automatically fetched from NREL API and stored in a JSONField in the same table/row as its Ref Installation Metadata – Lat/Lon/SC)<br>
+<h4>Setup Installation Key either by admin interface OR using Postman / cURL:</h4>
+<em>curl -D - -X POST <a href="https://oorjan-sv.herokuapp.com/solarsys/api/postinstallationkey/">
+    https://oorjan-sv.herokuapp.com/solarsys/api/postinstallationkey/</a> -d 'lat=19&long=73&sc=10' </em><br>
+<h4>Store LiveDC with installation key using Postman / cURL OR command (simulatelivedc.py): </h4>
+<em>curl -D - -X POST <a href="https://oorjan-sv.herokuapp.com/solarsys/api/livedc/">
+    https://oorjan-sv.herokuapp.com/solarsys/api/livedc/</a>-d 'installationkey=c97bc848-047a-4940-957d-b70cfd9be1ba&date=2017-03-03'</em><br>
+OR<br>
+<em>python simulatelivedc c97bc848-047a-4940-957d-b70cfd9be1ba 2017-03-03</em><br>
+<h4>Get Performance of Live DC (compared to nearest Ref DC) using Postman / cURL OR command (dailyReport.py):</h4>
+<em><a href="https://oorjan-sv.herokuapp.com/solarsys/api/performance/?installationkey=1c51c1ad-734a-4fb2-996f-b1b423092e2e&date=05-03-2017">
+    https://oorjan-sv.herokuapp.com/solarsys/api/performance/?installationkey=1c51c1ad-734a-4fb2-996f-b1b423092e2e&date=05-03-2017</a>
+    </em><br>
+OR<br>
+<em>python manage.py dailyReport --date 2017-01-01 --installationkey c97bc848-047a-4940-957d-b70cfd9be1ba</em><br><br>
+
+<h3>Other API end points:</h3>
+
+<h4>Get Live DC for installation key and date:</h4>
+<em><a href="https://oorjan-sv.herokuapp.com/solarsys/api/getlivedc/?installationkey=722066cc-50a7-47d1-9bb5-04e287d6033c&date=2017-03-01">
+    https://oorjan-sv.herokuapp.com/solarsys/api/getlivedc/</a></em><br>
+<h4>Get Reference Data based on SC and approx. lat/long (from database):</h4>
+<em><a href="https://oorjan-sv.herokuapp.com/solarsys/api/getreference/?lat=28.1&long=77.1&sc=3&date=04-03-2017">
+    https://oorjan-sv.herokuapp.com/solarsys/api/getreference/</a></em><br>
+<p>NOTE: Please use cURL/Postman (or a script, if specified) for API calls. Links may not work on browsers as the content type is x-www-form-urlencoded. Also refer to Design-Docs folder for more information.</p>

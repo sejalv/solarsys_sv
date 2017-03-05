@@ -1,12 +1,13 @@
 from django.core.exceptions import ObjectDoesNotExist
 from django.shortcuts import get_object_or_404, render, HttpResponse
-from django.core.urlresolvers import reverse
 from django.views.decorators.csrf import csrf_exempt
-from .models import Reference, LiveDC, InstallationKey
+from django.views.generic import TemplateView
 from datetime import datetime #, timedelta
 import math, requests
+from .models import Reference, LiveDC, InstallationKey
 import utilities
-from django.utils import timezone
+#from django.core.urlresolvers import reverse
+#from django.utils import timezone
 
 # Create your views here.
 
@@ -72,10 +73,11 @@ def get_livedc(request):
         return HttpResponse(status=400, content="Invalid installation key")
 
     ldc = LiveDC.objects.filter(installation_key=installation_key, timestamp__date=date.date()).order_by('timestamp')
-    content=""
+    content_heading="Live DC for Installation Key:"+installationkey+"<br> Date:"+str(date.date())+"<br><br>"
+    content = ""
     for ld in ldc:
-        content += str(ld.timestamp.hour)+": "+str(ld.dc_power)+"<br>"
-    return HttpResponse(status=200, content=content)
+        content += str(ld.timestamp.hour)+":00:00 - "+str(ld.dc_power)+"<br>"
+    return HttpResponse(status=200, content=content_heading+content if content else "Live Data not found for this IK/Date.<br>Please check parameters.")
 
 
 @csrf_exempt
@@ -95,7 +97,7 @@ def get_performance(request):
         return HttpResponse(status=400, content="Invalid installation key")
 
     msg = utilities.dailyPerformance(installationkey, date)
-    content = msg if msg else "No data for this day or installation key"     #str.replace(msg, "<br>", "\n")
+    content = "Live DC with low DC Power"+msg if msg else "No data for this day or installation key"     #str.replace(msg, "<br>", "\n")
     return HttpResponse(status=200, content=content)
 
 
@@ -115,7 +117,7 @@ def get_nearbyinstallationkey(request):
                                                 system_capacity=sc)
     content=""
     for ik in installationkey:
-        content += "ID: "+str(ik.installation_key)+"<br>Lat: "+str(ik.lat) +"<br>Lon: "+str(ik.long)\
+        content += "IK ID: "+str(ik.installation_key)+"<br>Lat: "+str(ik.lat) +"<br>Lon: "+str(ik.long)\
                                                         +"<br>SC: "+str(ik.system_capacity)+"<br>"
     return HttpResponse(status=200, content=content)
 
@@ -146,15 +148,17 @@ def get_reference(request):
 
     day_of_year = date.timetuple().tm_yday
     #refid = utilities.nearest_reference(lat, long, sc)
-    ref = Reference.objects.get(lat__range=(math.floor(lat)-0.5, math.ceil(lat)+0.5),
+    refs = Reference.objects.filter(lat__range=(math.floor(lat)-0.5, math.ceil(lat)+0.5),
                                              long__range=(math.floor(lon)-0.5, math.ceil(lon)+0.5),
                                                 system_capacity=sc)
-    content_head = "ID: "+str(ref.id)+"<br>Lat: "+str(ref.lat) +"<br>Lon: "+str(ref.long)+"<br>SC: "+str(ref.system_capacity)+"<br>"
-    content_body = ""
-    for hr in range(24):
-        content_body += str(hr) + ": " + str(ref.dc[str(day_of_year-1)][hr]) + "<br>"
+    content_body=""
+    for ref in refs:
+        content_body = "Ref DC for Date:"+str(date.date())+"<br><br> Ref ID: "+str(ref.id)+"<br>Lat: "+str(ref.lat) +"<br>Lon: "\
+                   +str(ref.long)+"<br>SC: "+str(ref.system_capacity)+"<br><br>"
+        for hr in range(24):
+            content_body += str(hr) + ":00:00 - " + str(ref.dc[str(day_of_year-1)][hr]) + "<br>"
 
-    return HttpResponse(status=200, content=content_head+content_body)
+    return HttpResponse(status=200, content=content_body if content_body else "Appropriate Reference data not found.<br>Please adjust lat/long/sc parameters")
 
 @csrf_exempt
 def post_reference(request):

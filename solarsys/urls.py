@@ -1,9 +1,11 @@
 from django.conf.urls import url
-#from django.views.generic.base import RedirectView
+from django.views.generic import TemplateView
 from . import views #, dailyReport
 
 urlpatterns = [
     # ex: /
+    url(r'^$', TemplateView.as_view(template_name="solarsys/home.html"), name='home'),
+
     # API URLs
     url(r'^solarsys/api/performance/', views.get_performance, name='get_performance'),
 
