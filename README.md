@@ -29,7 +29,7 @@ OR
 
 *	Get Performance of Live DC (compared to nearest Ref DC) using Postman / cURL OR command (dailyReport.py):
 
-> https://oorjan-sv.herokuapp.com/solarsys/api/performance/?installationkey=16e66c37-d303-4d06-a6a5-a23eccf0c463&date=04-03-2017
+> https://oorjan-sv.herokuapp.com/solarsys/api/performance/?installationkey=1c51c1ad-734a-4fb2-996f-b1b423092e2e&date=05-03-2017 
 
 OR
 
@@ -40,7 +40,7 @@ Other API end points:
 
 * Get Live DC for installation key and date:
 
-https://oorjan-sv.herokuapp.com/solarsys/api/performance/?installationkey=1c51c1ad-734a-4fb2-996f-b1b423092e2e&date=05-03-2017
+https://oorjan-sv.herokuapp.com/solarsys/api/getlivedc/?installationkey=722066cc-50a7-47d1-9bb5-04e287d6033c&date=2017-03-01
 
 * Get Reference Data based on SC and approx. lat/long (from database):
 
