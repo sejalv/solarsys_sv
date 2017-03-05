@@ -13,7 +13,7 @@ def getRefDC_API(lat,lon,sc): # fetches and returns 365 x 24 DC Power values for
     #      "&array_type=1&module_type=1&losses=10&dataset=IN&timeframe=hourly" % (api_key, lat, lon, sc, lat)
     api ='https://developer.nrel.gov/api/pvwatts/v5.json?api_key={api_key}&lat={lat}&lon={long}' \
          '&system_capacity={system_capacity}&azimuth=180&tilt={lat}&array_type=1&module_type=1&losses=10' \
-         '&dataset=IN&timeframe=hourly'.format(api_key=api_key,lat=lat, long=long, system_capacity=system_capacity)
+         '&dataset=IN&timeframe=hourly'.format(api_key=api_key,lat=lat, long=lon, system_capacity=sc)
     print api
     try:   # call and load Ref API request
         req = requests.get(api)
