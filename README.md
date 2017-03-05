@@ -27,7 +27,7 @@ OR
 > python simulatelivedc.py c97bc848-047a-4940-957d-b70cfd9be1ba 2017-03-03
 
 
-*	Get Performance of Live DC (compared to nearest Ref DC) Postman / cURL OR command (dailyReport.py):
+*	Get Performance of Live DC (compared to nearest Ref DC) using Postman / cURL OR command (dailyReport.py):
 
 > https://oorjan-sv.herokuapp.com/solarsys/api/performance/?installationkey=16e66c37-d303-4d06-a6a5-a23eccf0c463&date=04-03-2017
 
@@ -47,4 +47,5 @@ https://oorjan-sv.herokuapp.com/solarsys/api/getlivedc/?installationkey=722066cc
 https://oorjan-sv.herokuapp.com/solarsys/api/getreference/?lat=28.1&long=77.1&sc=3&date=04-03-2017
 
 
-Please refer to Design-Docs folder for more information.
+NOTE: Please use cURL/Postman (or a script, if specified) for API calls. Links may not work on browsers as the content type is x-www-form-urlencoded.
+Also refer to Design-Docs folder for more information.
