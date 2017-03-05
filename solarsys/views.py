@@ -165,18 +165,8 @@ def post_reference(request):
     except (KeyError, ValueError, TypeError):
         return HttpResponse(status=400, content="Invalid request param. Input must be valid lat, long, system_capacity")
 
-    response = requests.get('https://developer.nrel.gov/api/pvwatts/v5.json?api_key=DEMO_KEY&lat={lat}&lon={long}&system_capacity={system_capacity}&azimuth=180&tilt={lat}&array_type=1&module_type=1&losses=10&dataset=IN&timeframe=hourly'.format(lat=lat, long=long, system_capacity=system_capacity))
-    try:
-        reference = response.json()
-        dc = reference['outputs']['dc']
-        #metadata = {'inputs': reference['inputs'], 'station_info': reference['station_info']}
-    except KeyError:
-        return HttpResponse(status=400, content="No reference DC data found for given lat-long-sc")
-    except Exception as e:
-        return HttpResponse(status=400, content="Some error occured. " + str(e))
-
     refdc = utilities.getRefDC_API(lat, long, system_capacity)
-    if isinstance(util_rt, str):
+    if isinstance(refdc, str):
         return HttpResponse(status=400, content=refdc)
     else:
         ref, created = Reference.objects.update_or_create(lat=lat, long=long, system_capacity=system_capacity, defaults={'dc':refdc})

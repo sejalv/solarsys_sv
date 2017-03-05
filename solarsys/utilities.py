@@ -9,8 +9,11 @@ from .models import LiveDC, Reference, InstallationKey
 
 def getRefDC_API(lat,lon,sc): # fetches and returns 365 x 24 DC Power values for each installation (ref obj)
     api_key = secret1.API_NREL_SECRET_KEY
-    api = "https://developer.nrel.gov/api/pvwatts/v5.json?api_key=%s&lat=%f&lon=%f&system_capacity=%f&azimuth=180&tilt=%f" \
-          "&array_type=1&module_type=1&losses=10&dataset=IN&timeframe=hourly" % (api_key, lat, lon, sc, lat)
+    #api = "https://developer.nrel.gov/api/pvwatts/v5.json?api_key=%s&lat=%f&lon=%f&system_capacity=%f&azimuth=180&tilt=%f" \
+    #      "&array_type=1&module_type=1&losses=10&dataset=IN&timeframe=hourly" % (api_key, lat, lon, sc, lat)
+    api ='https://developer.nrel.gov/api/pvwatts/v5.json?api_key={api_key}&lat={lat}&lon={long}' \
+         '&system_capacity={system_capacity}&azimuth=180&tilt={lat}&array_type=1&module_type=1&losses=10' \
+         '&dataset=IN&timeframe=hourly'.format(api_key=api_key,lat=lat, long=long, system_capacity=system_capacity)
     print api
     try:   # call and load Ref API request
         req = requests.get(api)
