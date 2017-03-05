@@ -9,21 +9,21 @@ API end points:
 
 *	Setup Reference Data either by admin interface OR using Postman / cURL:
 
->curl -D - -X POST https://oorjan-sv.herokuapp.com/solarsys/api/postreference/ -d 'lat=19&long=73&system_capacity=4'
+> curl -D - -X POST https://oorjan-sv.herokuapp.com/solarsys/api/postreference/ -d 'lat=19&long=73&system_capacity=4'
 (DC Output (8760 data points) will be automatically fetched from NREL API and stored along with Ref Installation Metadata – Lat/Lon/SC)
 
 
 *	Setup Installation Key either by admin interface OR using Postman / cURL:
 
->curl -D - -X POST https://oorjan-sv.herokuapp.com/solarsys/api/postinstallationkey/  -d 'lat=19&long=73&sc=10'
+> curl -D - -X POST https://oorjan-sv.herokuapp.com/solarsys/api/postinstallationkey/ -d 'lat=19&long=73&sc=10'
 
 
 *	Store LiveDC with installation key using Postman / cURL OR command (simulatelivedc.py):
->curl -D - -X POST https://oorjan-sv.herokuapp.com/solarsys/api/livedc/ -d 'installationkey=c97bc848-047a-4940-957d-b70cfd9be1ba&date=2017-03-03'
+> curl -D - -X POST https://oorjan-sv.herokuapp.com/solarsys/api/livedc/ -d 'installationkey=c97bc848-047a-4940-957d-b70cfd9be1ba&date=2017-03-03'
 
 OR
 
->python simulatelivedc.py c97bc848-047a-4940-957d-b70cfd9be1ba 2017-03-03
+> python simulatelivedc.py c97bc848-047a-4940-957d-b70cfd9be1ba 2017-03-03
 
 
 *	Get Performance of Live DC (compared to nearest Ref DC) Postman / cURL OR command (dailyReport.py):
@@ -32,7 +32,7 @@ OR
 
 OR
 
->python manage.py dailyReport --date 2017-01-01 --installationkey c97bc848-047a-4940-957d-b70cfd9be1ba
+> python manage.py dailyReport --date 2017-01-01 --installationkey c97bc848-047a-4940-957d-b70cfd9be1ba
 
 
 Other API end points:
