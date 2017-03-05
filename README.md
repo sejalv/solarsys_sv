@@ -10,7 +10,7 @@ API end points:
 *	Setup Reference Data either by admin interface OR using Postman / cURL:
 
 > curl -D - -X POST https://oorjan-sv.herokuapp.com/solarsys/api/postreference/ -d 'lat=19&long=73&system_capacity=4'
-(DC Output (8760 data points) will be automatically fetched from NREL API and stored along with Ref Installation Metadata – Lat/Lon/SC)
+(DC Output - 8760 data points, will be automatically fetched from NREL API and stored in a JSONField in the same table/row as its Ref Installation Metadata – Lat/Lon/SC)
 
 
 *	Setup Installation Key either by admin interface OR using Postman / cURL:
@@ -19,6 +19,7 @@ API end points:
 
 
 *	Store LiveDC with installation key using Postman / cURL OR command (simulatelivedc.py):
+
 > curl -D - -X POST https://oorjan-sv.herokuapp.com/solarsys/api/livedc/ -d 'installationkey=c97bc848-047a-4940-957d-b70cfd9be1ba&date=2017-03-03'
 
 OR
