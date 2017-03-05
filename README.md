@@ -10,7 +10,7 @@ API end points:
 *	Setup Reference Data either by admin interface OR using Postman / cURL:
 
 > curl -D - -X POST https://oorjan-sv.herokuapp.com/solarsys/api/postreference/ -d 'lat=19&long=73&system_capacity=4'
-(DC Output - 8760 data points, will be automatically fetched from NREL API and stored in a JSONField in the same table/row as its Ref Installation Metadata – Lat/Lon/SC)
+ (DC Output - 8760 data points, will be automatically fetched from NREL API and stored in a JSONField in the same table/row as its Ref Installation Metadata – Lat/Lon/SC)
 
 
 *	Setup Installation Key either by admin interface OR using Postman / cURL:
@@ -33,7 +33,8 @@ OR
 
 OR
 
-> python manage.py dailyReport --date 2017-01-01 --installationkey c97bc848-047a-4940-957d-b70cfd9be1ba
+> python manage.py dailyReport 05-03-2017 1c51c1ad-734a-4fb2-996f-b1b423092e2e
+ (python manage.py dailyReport <date> <installation_key> : Setup on Heroku Scheduler for 8.00 PM to be sent to settings.EMAIL_TO)
 
 
 Other API end points:
