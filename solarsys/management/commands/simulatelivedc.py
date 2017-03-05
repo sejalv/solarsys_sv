@@ -5,7 +5,7 @@ python manage.py simulatelivddc
 python manage.py simulatelivedc <installation_key> <2017-12-23>
 """
 from django.core.management.base import BaseCommand, CommandError
-import requests, random, sys
+import requests, random, sys #, uuid
 from datetime import datetime
 from solarsys import utilities
 

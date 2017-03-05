@@ -35,7 +35,7 @@ class ReferenceAdmin(admin.ModelAdmin):
 class InstallationKeyAdmin(admin.ModelAdmin):
     model = InstallationKey
     fields = ['lat', 'long', 'system_capacity']
-    list_display = ['lat', 'long', 'system_capacity']
+    list_display = ['installation_key','lat', 'long', 'system_capacity']
     list_filter = ['lat', 'long', 'system_capacity']
     search_fields = ['installation_key']
 

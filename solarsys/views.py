@@ -1,13 +1,13 @@
 from django.core.exceptions import ObjectDoesNotExist
 from django.shortcuts import get_object_or_404, render, HttpResponse
-#from django.http import HttpResponseRedirect, HttpResponseForbidden
 from django.core.urlresolvers import reverse
-from django.views.decorators.csrf import csrf_exempt #, csrf_protect
+from django.views.decorators.csrf import csrf_exempt
 from .models import Reference, LiveDC, InstallationKey
 from datetime import datetime #, timedelta
 import math, requests
 import utilities
 from django.utils import timezone
+
 # Create your views here.
 
 @csrf_exempt
@@ -59,12 +59,12 @@ def sim_livedc(request):
 def get_livedc(request):
     try:
         installationkey = request.GET['installationkey']
-        date = datetime.strptime(request.GET['date'], "%d-%m-%Y")
+        date = datetime.strptime(request.GET['date'], "%Y-%m-%d")
     except KeyError:
         return HttpResponse(status=400,
                             content="Invalid request param. Input Must be a valid 'installationkey', 'date'.")
     except ValueError:
-        return HttpResponse(status=400, content="date must be of format %d-%m-%Y")
+        return HttpResponse(status=400, content="date must be of format %Y-%m-%d")
 
     try:
         installation_key = InstallationKey.objects.get(installation_key=installationkey)
@@ -95,12 +95,12 @@ def get_performance(request):
         return HttpResponse(status=400, content="Invalid installation key")
 
     msg = utilities.dailyPerformance(installationkey, date)
-    content = msg if msg else "Nearest Reference not found"     #str.replace(msg, "<br>", "\n")
+    content = msg if msg else "No data for this day or installation key"     #str.replace(msg, "<br>", "\n")
     return HttpResponse(status=200, content=content)
 
 
 @csrf_exempt
-def get_installationkey(request):
+def get_nearbyinstallationkey(request):
     try:
         lat = float(request.GET['lat'])
         lon = float(request.GET['long'])
@@ -110,10 +110,13 @@ def get_installationkey(request):
         return HttpResponse(status=400, content="Invalid request param, input must be valid float lat-long-sc")
 
     #refid = utilities.nearest_reference(lat, long, sc)
-    ik = InstallationKey.objects.get(lat__range=(math.floor(lat)-0.5, math.ceil(lat)+0.5),
+    installationkey = InstallationKey.objects.filter(lat__range=(math.floor(lat)-0.5, math.ceil(lat)+0.5),
                                              long__range=(math.floor(lon)-0.5, math.ceil(lon)+0.5),
                                                 system_capacity=sc)
-    content = "ID: "+str(ik.installation_key)+"<br>Lat: "+str(ik.lat) +"<br>Lon: "+str(ik.long)+"<br>SC: "+str(ik.system_capacity)
+    content=""
+    for ik in installationkey:
+        content += "ID: "+str(ik.installation_key)+"<br>Lat: "+str(ik.lat) +"<br>Lon: "+str(ik.long)\
+                                                        +"<br>SC: "+str(ik.system_capacity)+"<br>"
     return HttpResponse(status=200, content=content)
 
 @csrf_exempt
@@ -172,8 +175,12 @@ def post_reference(request):
     except Exception as e:
         return HttpResponse(status=400, content="Some error occured. " + str(e))
 
-    ref, created = Reference.objects.update_or_create(lat=lat, long=long, system_capacity=system_capacity, defaults={'dc':dc})
+    refdc = utilities.getRefDC_API(lat, long, system_capacity)
+    if isinstance(util_rt, str):
+        return HttpResponse(status=400, content=refdc)
+    else:
+        ref, created = Reference.objects.update_or_create(lat=lat, long=long, system_capacity=system_capacity, defaults={'dc':refdc})
                                                       #defaults={'metadata': metadata, 'dc':dc})
-    #station, created = Station.objects.update_or_create(lat=lat, long=long, defaults={'reference': ref, 'system_capacity':system_capacity})
+        return HttpResponse(status=201, content="Created Reference ID:"+str(ref.id))
 
-    return HttpResponse(status=201, content=ref.id)
+
