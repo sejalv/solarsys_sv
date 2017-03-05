@@ -1,34 +1,51 @@
-Link: https://oorjan-sv.herokuapp.com
+Web Service (only API links available at the moment): https://oorjan-sv.herokuapp.com
 
 Created a service that measures performance of solar systems against reference/estimated performance, and sends daily alerts highlighting hours of the day when actual solar power (DC, in watts) was less than 80% of reference/estimated solar power (DC, in watts).
 
-Technologies: Python 2.7 with Django Framework, PostgreSQL (Database), HTML (Web), Heroku (Deployment)
-
-Sample reference data: Hourly DC solar power (in watts), key “dc”, which includes 365*24=8760 data points is the reference/estimated data.
-* API endpoint with sample parameters: https://developer.nrel.gov/api/pvwatts/v5.json?api_key=DEMO_KEY&lat=19&lon=73&system_capacity=4&azimuth=180&tilt=19&array_type=1&module_type=1&losses=10&dataset=IN&timeframe=hourly 
+Technologies: Python 2.7 with Django Framework, REST API (Web), PostgreSQL (Database), Heroku (Deployment)
 
 
-DB Tables: 
-* solarsys_reference (Model- Reference): Reference Metadata (Inputs) and DC values (Outputs['DC']) for 8760 data points, using jsonfield (key=Day of Year, values=DC power values of 24 hours for each day) - Data load through Admin page
-* solarsys_installationkey (Model- InstallationKey): Auto-generated Installation Key (UUID) with correspoonding 'lat','long','system_capacity' values
-* solarsys_livedc (Model- LiveDC): DC Power records simulated per hour for each installation key, inserted here
+API end points:
 
-Scripts:
-* simDCLive.py (/solarsys/management/commands): Hourly script that simulates DC Power for each installation key (scheduled using Heroku Scheduler)
-* dailyReport.py (/solarsys/management/commands): Daily script that compares Live DC Power values of the day with Reference DC Power values, based on nearest lat/long, and same SC/timestamp (Date+Hour), and sends an email alert at 8PM, consisting of those Live DC values which are less than 80% of Ref Dc values
+*	Setup Reference Data either by admin interface OR using Postman / cURL:
 
-Web Pages (/solarsys/templates/solarsys):
-* reference_data.html (View- reference_data): lists all the Reference DC values for the day
-* live_data.html (View- live_data): lists all the Live DC values for the day
-* performance_report.html (View- performance_report): list of flagged Live DC values (<80% of DC) for the day along with its corresponding DC values and installation key
-* 2 API links (pending)
+> curl -D - -X POST https://oorjan-sv.herokuapp.com/solarsys/api/postreference/ -d 'lat=19&long=73&system_capacity=4'
+(DC Output - 8760 data points, will be automatically fetched from NREL API and stored in a JSONField in the same table/row as its Ref Installation Metadata – Lat/Lon/SC)
 
-Other:
-* Logic and functions (/solarsys/utilities.py)
-* Basic tests (/solarsys/views.py)
-* App URLs (/solarsys/urls.py)
 
-Ongoing/Pending Tasks:
-* API link provision
-* Additional test cases for data validation, email and error logs
-* Improvement in front end
+*	Setup Installation Key either by admin interface OR using Postman / cURL:
+
+> curl -D - -X POST https://oorjan-sv.herokuapp.com/solarsys/api/postinstallationkey/ -d 'lat=19&long=73&sc=10'
+
+
+*	Store LiveDC with installation key using Postman / cURL OR command (simulatelivedc.py):
+
+> curl -D - -X POST https://oorjan-sv.herokuapp.com/solarsys/api/livedc/ -d 'installationkey=c97bc848-047a-4940-957d-b70cfd9be1ba&date=2017-03-03'
+
+OR
+
+> python simulatelivedc c97bc848-047a-4940-957d-b70cfd9be1ba 2017-03-03
+
+
+*	Get Performance of Live DC (compared to nearest Ref DC) using Postman / cURL OR command (dailyReport.py):
+
+> https://oorjan-sv.herokuapp.com/solarsys/api/performance/?installationkey=1c51c1ad-734a-4fb2-996f-b1b423092e2e&date=05-03-2017 
+
+OR
+
+> python manage.py dailyReport --date 2017-01-01 --installationkey c97bc848-047a-4940-957d-b70cfd9be1ba
+
+
+Other API end points:
+
+* Get Live DC for installation key and date:
+
+https://oorjan-sv.herokuapp.com/solarsys/api/getlivedc/?installationkey=722066cc-50a7-47d1-9bb5-04e287d6033c&date=2017-03-01
+
+* Get Reference Data based on SC and approx. lat/long (from database):
+
+https://oorjan-sv.herokuapp.com/solarsys/api/getreference/?lat=28.1&long=77.1&sc=3&date=04-03-2017
+
+
+NOTE: Please use cURL/Postman (or a script, if specified) for API calls. Links may not work on browsers as the content type is x-www-form-urlencoded.
+Also refer to Design-Docs folder for more information.
