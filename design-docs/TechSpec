@@ -1,0 +1,39 @@
+--- Tech Spec ---
+
+(Also refer to Design_db_sys.xlsx)
+
+
+DB Tables:
+
+* solarsys_reference (Model- Reference): Reference Metadata (Inputs) and DC values (Outputs['DC']) for 8760 data points, using jsonfield (key=Day of Year, values=DC power values of 24 hours for each day) - Data load through Admin page
+
+* solarsys_installationkey (Model- InstallationKey): Auto-generated Installation Key (UUID) with corresponding 'lat','long','system_capacity' values
+
+* solarsys_livedc (Model- LiveDC): DC Power records simulated per hour for each installation key, stored here
+
+
+Scripts:
+
+* simulatelivedc.py (/solarsys/management/commands): Simulates/generates and stores DC Power for 24 hours of a day for each installation key
+
+* dailyReport.py (/solarsys/management/commands): Daily script that compares Live DC Power values of the day with Reference DC Power values, based on nearest lat/long, and same SC/timestamp (Date+Hour), and sends an email alert at 8PM, consisting of those Live DC values which are less than 80% of Ref Dc values
+
+
+Other:
+
+* models.py: Defined models as per database, along with some properties
+
+* views.py: View functions for each API call, along with handling of API parameters
+
+* urls.py: URL mapping for each API endpoint
+
+* admin.py: Customized admin interface- save_model() overriden to automatically fetch and store DC Power [8760 data points] from Ref API, based on provided lat/lon/sc
+
+
+* utilities.py: All the logic of this system is defined here-
+
+> getRefDC_API(lat/lon/sc)
+> nearest_reference(ik_lat,ik_long,ik_sc)
+> genLiveDC_hourly(ik, hr)
+> dailyPerformance(installation_key,date)
+> sendemail(message)
