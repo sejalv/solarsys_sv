@@ -1,4 +1,4 @@
-Link: https://oorjan-sv.herokuapp.com
+Web Service: https://oorjan-sv.herokuapp.com  (only API links available at the moment)
 
 Created a service that measures performance of solar systems against reference/estimated performance, and sends daily alerts highlighting hours of the day when actual solar power (DC, in watts) was less than 80% of reference/estimated solar power (DC, in watts).
 
