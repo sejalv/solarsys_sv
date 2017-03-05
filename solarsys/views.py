@@ -97,7 +97,7 @@ def get_performance(request):
         return HttpResponse(status=400, content="Invalid installation key")
 
     msg = utilities.dailyPerformance(installationkey, date)
-    content = "Live DC with low DC Power"+msg if msg else "No data for this day or installation key"     #str.replace(msg, "<br>", "\n")
+    content = "Live DC with low DC Power<br><br>"+msg if msg else "No data for this day or installation key"     #str.replace(msg, "<br>", "\n")
     return HttpResponse(status=200, content=content)
 
 
