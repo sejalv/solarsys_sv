@@ -35,7 +35,7 @@ OR
 
 > python manage.py dailyReport 05-03-2017 1c51c1ad-734a-4fb2-996f-b1b423092e2e
 
-(python manage.py dailyReport -date -installation_key : Setup on Heroku Scheduler for 8.00 PM to be sent to settings.EMAIL_TO)
+(python manage.py dailyReport -date -installation_key : Setup on Heroku Scheduler for 8.00 PM to be sent to settings.EMAIL_HOST_USER)
 
 
 
