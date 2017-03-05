@@ -29,7 +29,7 @@ OR
 
 *	Get Performance of Live DC (compared to nearest Ref DC) Postman / cURL OR command (dailyReport.py):
 
-> https://oorjan-sv.herokuapp.com/solarsys/api/performance/?installationkey=16e66c37-d303-4d06-a6a5-a23eccf0c463&date=04-03-2017
+> https://oorjan-sv.herokuapp.com/solarsys/api/performance/?installationkey=16e66c37-d303-4d06-a6a5-a23eccf0c463&date=2017-04-03
 
 OR
 
