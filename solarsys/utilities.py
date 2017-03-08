@@ -33,16 +33,16 @@ def getRefDC_API(lat,lon,sc): # fetches and returns 365 x 24 DC Power values for
     return dc   # 365 keys -> 24 values for each key
 
 
-def nearest_reference(ik_lat,ik_long,ik_sc):    # finds and returns nearest reference obj id for an installation key
+def nearest_point(src_lat,src_long,src_sc):    # finds and returns nearest point (eg. reference) for a source (eg. installation key)
     nearby_station = [None, 999999999999]
-    ref = Reference.objects.filter(system_capacity=ik_sc)
+    ref = Reference.objects.filter(system_capacity=src_sc)
     if len(ref):
-        for i in range(len(ref)):
-            source_point = (ik_lat, ik_long)
-            destination_point = (ref.values_list('lat')[i][0], ref.values_list('long')[i][0])
+        for i in ref: #range(len(ref)):
+            source_point = (src_lat, src_long)
+            destination_point = (i.lat, i.long) #(ref.values_list('lat')[i][0], ref.values_list('long')[i][0])
             distance = haversine(source_point, destination_point)
             if distance < nearby_station[1]:
-                nearby_station[0] = ref.values_list('id')[i][0]
+                nearby_station[0] = i.id    #ref.values_list('id')[i][0]
                 nearby_station[1] = distance
     return nearby_station[0]       # refid or None
 
@@ -50,7 +50,7 @@ def nearest_reference(ik_lat,ik_long,ik_sc):    # finds and returns nearest refe
 def genLiveDC_hourly(ik, hr):    # generates and returns DC power by the hour for an installation key
     try:
         ik = InstallationKey.objects.get(installation_key=ik)
-        refid = nearest_reference(ik.lat,ik.long,ik.system_capacity)
+        refid = nearest_point(ik.lat,ik.long,ik.system_capacity)
         ref = Reference.objects.get(id=refid)
 
         rdc_hr = []
@@ -66,14 +66,13 @@ def genLiveDC_hourly(ik, hr):    # generates and returns DC power by the hour fo
 def dailyPerformance(installation_key,date):    # measures performance of Live DC wrt. Ref DC for each hour of the day
     try:
         ik = InstallationKey.objects.get(installation_key=installation_key)
-        refid = nearest_reference(ik.lat, ik.long, ik.system_capacity)
+        refid = nearest_point(ik.lat, ik.long, ik.system_capacity)
         ref = Reference.objects.get(id=refid)
         livedcs = LiveDC.objects.filter(installation_key=ik, timestamp__date=date.date()).order_by('timestamp')
         day_of_year = date.timetuple().tm_yday
         msg=""
         for ldc in livedcs:
             rdc = ref.dc[str(day_of_year-1)][ldc.timestamp.hour]
-            #if ldc.values('dc_power')[0] < rdc_hr * 80/100:
             if ldc.dc_power < rdc * 0.8:     # comparing live DC with 80% of ref DC
                 msg += 'Timestamp: {timestamp} <br> ' \
                        'Live DC Power: {live_dc_power}  < 80%% of Reference DC Power: {reference_dc_power}<br>' \

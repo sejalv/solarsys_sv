@@ -4,13 +4,13 @@ from django.contrib.postgres.fields import JSONField
 from django.db import models
 import uuid
 
-# combined Installation and ReferenceDC tables into 1
+# combined Installation and ReferenceDC tables into one
 class Reference(models.Model):
     lat = models.DecimalField(max_digits=9, decimal_places=6)
     long = models.DecimalField(max_digits=9, decimal_places=6)
     system_capacity = models.DecimalField(max_digits=9, decimal_places=3)
     dc = JSONField()     #key: DoY (Day of Year, starting from 0) -> values: 24 DC values (per hour) for DoY
-    #added_on = models.DateTimeField(auto_now_add=True)
+    added_on = models.DateTimeField(auto_now_add=True)
 
     def __unicode__(self):
         return unicode(self.id)
@@ -22,8 +22,8 @@ class Reference(models.Model):
     """
     def clean(self, *args, **kwargs):
         errors = {}
-        if not isinstance(self.dc, list) or len(self.dc) != 8760:
-            errors['dc'] = 'DC must be an array containing 8760 data points.'
+        if not isinstance(self.dc, dict) or len(self.dc) != 365:
+            errors['dc'] = 'DC must be an dict containing 365 keys (24 values each)." #8760 data points.'
         if bool(errors):
             raise ValidationError(errors)
         super(Reference, self).clean(*args, **kwargs)
@@ -40,8 +40,9 @@ class InstallationKey(models.Model):
     lat = models.DecimalField(max_digits=9, decimal_places=6)
     long = models.DecimalField(max_digits=9, decimal_places=6)
     system_capacity = models.DecimalField(max_digits=7, decimal_places=4)
-    #installation_id = models.ForeignKey(Reference)
-    #added_on = models.DateTimeField(auto_now_add=True)
+    installation_id = models.ForeignKey(Reference)
+    address = models.CharField(max_length=255, blank=True, default='') #only city name would do
+    added_on = models.DateTimeField(auto_now_add=True)
 
     def __unicode__(self):
         return unicode(self.installation_key)
@@ -52,7 +53,6 @@ class LiveDC(models.Model):
     installation_key = models.ForeignKey(InstallationKey)
     timestamp = models.DateTimeField()
     dc_power = models.DecimalField(max_digits=9, decimal_places=4)
-    #    added_on = models.DateTimeField(auto_now_add=True)
 
     def __unicode__(self):
         return unicode(self.installation_key)

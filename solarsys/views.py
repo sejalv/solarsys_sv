@@ -3,6 +3,7 @@ from django.shortcuts import get_object_or_404, render, HttpResponse
 from django.views.decorators.csrf import csrf_exempt
 from django.views.generic import TemplateView
 from datetime import datetime #, timedelta
+from haversine import haversine
 import math, requests
 from .models import Reference, LiveDC, InstallationKey
 import utilities
@@ -111,13 +112,22 @@ def get_nearbyinstallationkey(request):
     except (KeyError, TypeError):
         return HttpResponse(status=400, content="Invalid request param, input must be valid float lat-long-sc")
 
-    #refid = utilities.nearest_reference(lat, long, sc)
-    installationkey = InstallationKey.objects.filter(lat__range=(math.floor(lat)-0.5, math.ceil(lat)+0.5),
-                                             long__range=(math.floor(lon)-0.5, math.ceil(lon)+0.5),
+    """
+    #refid = utilities.nearest_point(lat, long, sc)
+    installationkey = InstallationKey.objects.filter(lat__range=(math.floor(lat)-0.01, math.ceil(lat)+0.01),
+                                             long__range=(math.floor(lon)-0.01, math.ceil(lon)+0.01),
                                                 system_capacity=sc)
+    #for ik in installationkey:
     content=""
-    for ik in installationkey:
-        content += "IK ID: "+str(ik.installation_key)+"<br>Lat: "+str(ik.lat) +"<br>Lon: "+str(ik.long)\
+    """
+
+    ik_id = utilities.nearest_point(lat, lon, sc)
+    try:
+        ik = InstallationKey.objects.get(installation_key=ik_id)
+    except ObjectDoesNotExist:
+        return HttpResponse(status=400, content="Installation key not found for these parameters")
+
+    content = "IK ID: "+str(ik.installation_key)+"<br>Lat: "+str(ik.lat) +"<br>Lon: "+str(ik.long)\
                                                         +"<br>SC: "+str(ik.system_capacity)+"<br>"
     return HttpResponse(status=200, content=content)
 
@@ -129,10 +139,29 @@ def post_installationkey(request):
         sc = float(request.POST['sc'])
     except (KeyError, TypeError):
         return HttpResponse(status=400, content="Invalid request param, input must be valid float lat-long-sc")
-
-    #refid = utilities.nearest_reference(lat, long, sc)
-    installationkey = InstallationKey.objects.create(lat=lat,  long=long,  system_capacity=sc) # ,installation=refid
-    return HttpResponse(status=201, content="Okay <br>"+str(installationkey.installation_key))
+    try:
+        ik = InstallationKey.objects.get(lat=lat, long=long, system_capacity=sc)
+        return HttpResponse(status=400, content="An InstallationKey: {ik}, with given lat/lon/sc already exists!".format(ik=ik.installation_key))
+    except:
+        refid = utilities.nearest_point(lat, long, sc)
+        print refid
+        try:
+            ref = Reference.objects.get(id=refid) if refid else None
+            if haversine((lat, long), (ref.lat, ref.long)) <= 1:  # if ref object found in 1km radius
+                installationkey, created = InstallationKey.objects.get_or_create(
+                    lat=lat, long=long, system_capacity=sc, installation_id=ref)
+            else:
+                raise Exception
+        except:
+            refdc = utilities.getRefDC_API(lat, long, sc)
+            if isinstance(refdc, str):
+                return HttpResponse(status=400, content=refdc)
+            else:
+                ref, created = Reference.objects.update_or_create(lat=lat, long=long, system_capacity=sc,
+                                                                  defaults={'dc': refdc})
+                installationkey, created = InstallationKey.objects.get_or_create(
+                                            lat=lat, long=long, system_capacity=sc, installation_id=ref)
+        return HttpResponse(status=201, content="Okay <br>"+str(installationkey.installation_key))
 
 
 @csrf_exempt
@@ -147,16 +176,19 @@ def get_reference(request):
         return HttpResponse(status=400, content="Invalid request param, input must be valid float lat-long-sc")
 
     day_of_year = date.timetuple().tm_yday
-    #refid = utilities.nearest_reference(lat, long, sc)
+    """
     refs = Reference.objects.filter(lat__range=(math.floor(lat)-0.5, math.ceil(lat)+0.5),
                                              long__range=(math.floor(lon)-0.5, math.ceil(lon)+0.5),
                                                 system_capacity=sc)
-    content_body=""
-    for ref in refs:
-        content_body = "Ref DC for Date:"+str(date.date())+"<br><br> Ref ID: "+str(ref.id)+"<br>Lat: "+str(ref.lat) +"<br>Lon: "\
+    """
+    refid = utilities.nearest_point(lat, long, sc)
+    ref = Reference.objects.get(id=refid)
+    #content_body=""
+    #for ref in refs:
+    content_body = "Ref DC for Date:"+str(date.date())+"<br><br> Ref ID: "+str(ref.id)+"<br>Lat: "+str(ref.lat) +"<br>Lon: "\
                    +str(ref.long)+"<br>SC: "+str(ref.system_capacity)+"<br><br>"
-        for hr in range(24):
-            content_body += str(hr) + ":00:00 - " + str(ref.dc[str(day_of_year-1)][hr]) + "<br>"
+    for hr in range(24):
+        content_body += str(hr) + ":00:00 - " + str(ref.dc[str(day_of_year-1)][hr]) + "<br>"
 
     return HttpResponse(status=200, content=content_body if content_body else "Appropriate Reference data not found.<br>Please adjust lat/long/sc parameters")
 
