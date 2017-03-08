@@ -56,8 +56,8 @@ class InstallationKeyAdmin(admin.ModelAdmin):
             else:
                 raise Exception
         except:
-            refid = utilities.nearest_point(ik_lat, ik_long, ik_sc)
             try:
+                refid = utilities.nearest_point(ik_lat, ik_long, ik_sc)
                 ref = Reference.objects.get(id=refid) if refid else None
                 if haversine((ik_lat, ik_long), (ref.lat, ref.long)) <=1:  #if ref object found in 1km radius
                         obj.installation_id = ref
