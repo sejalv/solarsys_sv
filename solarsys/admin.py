@@ -69,7 +69,7 @@ class InstallationKeyAdmin(admin.ModelAdmin):
                     messages.set_level(request, messages.ERROR)
                     messages.error(request, refdc)
                 else:
-                    ref, created = Reference.objects.update_or_create(lat=ik_lat, long=long, system_capacity=ik_sc,
+                    ref, created = Reference.objects.update_or_create(lat=ik_lat, long=ik_long, system_capacity=ik_sc,
                                                                       defaults={'dc': refdc})
                     obj.installation_id = ref
             super(InstallationKeyAdmin, self).save_model(request, obj, form, change)
