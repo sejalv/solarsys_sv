@@ -33,7 +33,10 @@ OR
 
 OR
 
-> python manage.py dailyReport --date 2017-01-01 --installationkey c97bc848-047a-4940-957d-b70cfd9be1ba
+> python manage.py dailyReport 05-03-2017 1c51c1ad-734a-4fb2-996f-b1b423092e2e
+
+(python manage.py dailyReport -date -installation_key : Setup on Heroku Scheduler for 8.00 PM to be sent to settings.EMAIL_HOST_USER)
+
 
 
 Other API end points:
